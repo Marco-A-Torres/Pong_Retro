@@ -1,0 +1,20 @@
+[
+{
+  "directory": "C:/Users/marco/Desktop/Pong_CPP/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/Pong_Retro.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\Pong_Retro.dir\\src\\main.cpp.obj -c C:\\Users\\marco\\Desktop\\Pong_CPP\\src\\main.cpp",
+  "file": "C:/Users/marco/Desktop/Pong_CPP/src/main.cpp",
+  "output": "CMakeFiles/Pong_Retro.dir/src/main.cpp.obj"
+},
+{
+  "directory": "C:/Users/marco/Desktop/Pong_CPP/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/Pong_Retro.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\Pong_Retro.dir\\src\\Game.cpp.obj -c C:\\Users\\marco\\Desktop\\Pong_CPP\\src\\Game.cpp",
+  "file": "C:/Users/marco/Desktop/Pong_CPP/src/Game.cpp",
+  "output": "CMakeFiles/Pong_Retro.dir/src/Game.cpp.obj"
+},
+{
+  "directory": "C:/Users/marco/Desktop/Pong_CPP/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/Pong_Retro.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\Pong_Retro.dir\\src\\PowerUp.cpp.obj -c C:\\Users\\marco\\Desktop\\Pong_CPP\\src\\PowerUp.cpp",
+  "file": "C:/Users/marco/Desktop/Pong_CPP/src/PowerUp.cpp",
+  "output": "CMakeFiles/Pong_Retro.dir/src/PowerUp.cpp.obj"
+}
+]
