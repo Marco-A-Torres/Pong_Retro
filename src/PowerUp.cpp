@@ -6,10 +6,12 @@ PowerUp::PowerUp(float x, float y, Type type) : mType(type), mLifetime(0.f) {
     
     
     // Color según el tipo
-    if (mType == SPEED_BOOST) {
-        mShape.setFillColor(sf::Color::Blue);   // Rojo = Peligro/Velocidad
-    } else {
-        mShape.setFillColor(sf::Color::Green); // Verde = Ayuda/Tamaño
+   switch (type) {
+        case SPEED_BOOST:      mShape.setFillColor(sf::Color::Red); break;
+        case PADDLE_ENLARGE:   mShape.setFillColor(sf::Color::Green); break;
+        case GHOST_BALL:       mShape.setFillColor(sf::Color::Yellow); break;
+        case REVERSE_CONTROLS: mShape.setFillColor(sf::Color::Magenta); break;
+        case WALL:             mShape.setFillColor(sf::Color::Blue); break;
     }
     
     // Origen al centro para facilitar colisiones

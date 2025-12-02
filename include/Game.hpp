@@ -38,6 +38,11 @@ private:
     bool mIsEffectActive;           // Bandera para saber si debemos checar el tiempo
     PowerUp::Type mCurrentEffect;   // Qué efecto está activo ahorita
 
+    // --- VARIABLES PARA NUEVOS PODERES ---
+    bool mControlsInvertedLeft;  // ¿Jugador Izq está maldito?
+    bool mControlsInvertedRight; // ¿Jugador Der está maldito?
+    
+    sf::RectangleShape mWall;    // El objeto físico del muro
     // Función auxiliar para limpiar el desorden
     void resetEffects();
 };

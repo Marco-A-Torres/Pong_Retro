@@ -4,7 +4,11 @@
 class PowerUp {
 public:
     // Tipos de poderes disponibles
-    enum Type { SPEED_BOOST, PADDLE_ENLARGE };
+    enum Type { SPEED_BOOST, 
+        PADDLE_ENLARGE, // Verde
+        GHOST_BALL,     // Amarillo (Nuevo)
+        REVERSE_CONTROLS,
+        WALL };
 
     PowerUp(float x, float y, Type type);
     

@@ -1,7 +1,7 @@
 #include "Game.hpp"
 
 // Configuración de la ventana (800x600 px)
-Game::Game() : mWindow(sf::VideoMode(800, 600), "Pong Retro C++ - Avance 2") {
+Game::Game() : mWindow(sf::VideoMode(800, 600), "Pong Retro C++ - Avance 3") {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     mWindow.setFramerateLimit(60); // Limitamos a 60 FPS
@@ -26,6 +26,16 @@ Game::Game() : mWindow(sf::VideoMode(800, 600), "Pong Retro C++ - Avance 2") {
     //4.- --- NUEVO: Configuración de Física ---
     mPaddleSpeed = 400.f;             // 400 pixeles por segundo
     mBallVelocity = {-200.f, -200.f}; // Se mueve a la izquierda y arriba (-X, -Y)
+
+    //Power up maldición
+    mControlsInvertedLeft = false;
+    mControlsInvertedRight = false;
+
+    // Configurar el Muro (inicialmente oculto fuera de pantalla)
+    mWall.setSize(sf::Vector2f(20.f, 300.f)); // Un muro alto
+    mWall.setFillColor(sf::Color(0, 0, 255, 150)); // Azul semitransparente
+    mWall.setOrigin(10.f, 150.f); // Centro del muro
+    mWall.setPosition(-100.f, -100.f); // Fuera de juego
 }
 
 void Game::run() {
@@ -51,22 +61,24 @@ void Game::processEvents() {
 }
 
 void Game::update(sf::Time deltaTime) {
-    // 1. Movimiento de la Pala Izquierda (W / S)
+    // Velocidad base
+    float speedLeft = mPaddleSpeed;
+    float speedRight = mPaddleSpeed;
+
+    // Si están malditos, invertimos su velocidad individual
+    if (mControlsInvertedLeft) speedLeft = -mPaddleSpeed;
+    if (mControlsInvertedRight) speedRight = -mPaddleSpeed;
+
+    // Movimiento Pala Izquierda (Usamos speedLeft)
     sf::Vector2f movementLeft(0.f, 0.f);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        movementLeft.y -= mPaddleSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        movementLeft.y += mPaddleSpeed;
-    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) movementLeft.y -= speedLeft;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) movementLeft.y += speedLeft;
     mPaddleLeft.move(movementLeft * deltaTime.asSeconds());
 
-    // 2. Movimiento de la Pala Derecha (Flechas)
+    // Movimiento Pala Derecha (Usamos speedRight)
     sf::Vector2f movementRight(0.f, 0.f);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        movementRight.y -= mPaddleSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-        movementRight.y += mPaddleSpeed;
-
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) movementRight.y -= speedRight;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) movementRight.y += speedRight;
     mPaddleRight.move(movementRight * deltaTime.asSeconds());
 
     // 3. Movimiento de la Pelota
@@ -101,6 +113,18 @@ void Game::update(sf::Time deltaTime) {
         
         // Ajuste técnico: Empujar hacia la izquierda
         mBall.setPosition(mPaddleRight.getPosition().x - mBall.getRadius() * 2 - 0.1f, mBall.getPosition().y);
+    }
+
+    // Colisión Pelota vs Muro (Solo si el muro está activo/en pantalla)
+    if (mIsEffectActive && mCurrentEffect == PowerUp::WALL) {
+        if (mBall.getGlobalBounds().intersects(mWall.getGlobalBounds())) {
+            mBallVelocity.x = -mBallVelocity.x; // ¡Rebota!
+            
+            // Sonido visual: Cambiar color del muro brevemente
+            mWall.setFillColor(sf::Color::White); 
+        } else {
+            mWall.setFillColor(sf::Color(0, 0, 255, 150)); // Volver a azul
+        }
     }
 
     // 7. Sistema de Puntuación (Reset)
@@ -147,22 +171,31 @@ void Game::update(sf::Time deltaTime) {
             mActiveEffectTimer.restart(); // Inicia el cronómetro del poder
             mCurrentEffect = type;
             
+            // Dentro del loop de colisión con powerups en update()
+
             if (type == PowerUp::SPEED_BOOST) {
-                // FEEDBACK VISUAL: Pelota Roja = Peligro
                 mBall.setFillColor(sf::Color::Red);
-                mBallVelocity.x *= 1.8f; // Mucho más rápida
-                mBallVelocity.y *= 1.8f;
+                mBallVelocity.x *= 1.5f;
+                mBallVelocity.y *= 1.5f;
             } 
             else if (type == PowerUp::PADDLE_ENLARGE) {
-                // Lógica Inteligente: ¿Quién tocó la pelota último?
-                // Como es difícil saberlo simple, agrandamos al que esté más cerca de la pelota
-                if (mBall.getPosition().x < 400) {
-                    mPaddleLeft.setSize(sf::Vector2f(20.f, 200.f)); // Doble tamaño
-                    mPaddleLeft.setFillColor(sf::Color::Green);     // Feedback visual
-                } else {
-                    mPaddleRight.setSize(sf::Vector2f(20.f, 200.f));
-                    mPaddleRight.setFillColor(sf::Color::Green);
-                }
+                // Agrandar al que tenga la pelota cerca
+                if (mBall.getPosition().x < 400) mPaddleLeft.setSize(sf::Vector2f(20.f, 200.f));
+                else mPaddleRight.setSize(sf::Vector2f(20.f, 200.f));
+            }
+            else if (type == PowerUp::GHOST_BALL) {
+                // 1. FANTASMA: Volver transparente
+                mBall.setFillColor(sf::Color(255, 255, 255, 30)); // Casi invisible
+            }
+            else if (type == PowerUp::REVERSE_CONTROLS) {
+                // 2. MALDICIÓN: Invertir al oponente
+                // Si la pelota va a la derecha (>0), ataca el Izq -> Maldice al Der
+                if (mBallVelocity.x > 0) mControlsInvertedRight = true;
+                else mControlsInvertedLeft = true;
+            }
+            else if (type == PowerUp::WALL) {
+                // 3. MURO: Ponerlo en el centro
+                mWall.setPosition(400.f, 300.f);
             }
             
             mPowerUps.erase(mPowerUps.begin() + i);
@@ -199,29 +232,25 @@ void Game::spawnPowerUp() {
     float y = 50 + (std::rand() % 500);  // Entre 50 y 550
     
     // Tipo aleatorio (0 o 1)
-    int typeInt = std::rand() % 2;
-    PowerUp::Type type = (typeInt == 0) ? PowerUp::SPEED_BOOST : PowerUp::PADDLE_ENLARGE;
+    int typeInt = std::rand() % 5; 
+    PowerUp::Type type = static_cast<PowerUp::Type>(typeInt);
     
-    // Crear y guardar en el vector (push_back)
     mPowerUps.emplace_back(x, y, type);
 }
 
 void Game::resetEffects() {
     mIsEffectActive = false;
-
-    // 1. Regresar la pelota a color y velocidad normal (si no es un reset por gol)
-    mBall.setFillColor(sf::Color::White);
+    mBall.setFillColor(sf::Color::White); // Quita color rojo y fantasma
     
-    // Solo normalizamos la velocidad si NO estamos en medio de un saque
-    // (Un truco matemático: normalizamos el vector a su magnitud base)
-    // Pero por simplicidad, asegúrate de que al golpear la pala recupere velocidad base si quieres.
-    
-    // 2. Regresar las palas a tamaño y color normal
     mPaddleLeft.setSize(sf::Vector2f(20.f, 100.f));
-    mPaddleLeft.setFillColor(sf::Color::White);
-    
     mPaddleRight.setSize(sf::Vector2f(20.f, 100.f));
-    mPaddleRight.setFillColor(sf::Color::White);
+    
+    // Apagar maldiciones
+    mControlsInvertedLeft = false;
+    mControlsInvertedRight = false;
+
+    // Quitar muro
+    mWall.setPosition(-100.f, -100.f);
 }
 
 void Game::render() {
@@ -231,6 +260,10 @@ void Game::render() {
     mWindow.draw(mPaddleLeft);
     mWindow.draw(mPaddleRight);
     mWindow.draw(mBall);
+
+    if (mIsEffectActive && mCurrentEffect == PowerUp::WALL) {
+        mWindow.draw(mWall);
+    }
     
     // --- DIBUJAR POWERUPS ---
     // Recorremos el vector y dibujamos cada uno
