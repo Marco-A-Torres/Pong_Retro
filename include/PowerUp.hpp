@@ -13,7 +13,11 @@ public:
     void draw(sf::RenderWindow& window);
     Type getType() const; // Para saber qué efecto aplicar
 
+    void update(sf::Time deltaTime); // Para contar el tiempo
+    bool isExpired() const;          // Para preguntar: "¿Ya debo morir?"
 private:
     sf::CircleShape mShape;
     Type mType;
+
+    float mLifetime;
 };

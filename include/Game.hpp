@@ -32,4 +32,12 @@ private:
     
     // Función auxiliar para generar uno nuevo
     void spawnPowerUp();
+
+    // --- LÓGICA DE PULIDO DE POWER-UPS ---
+    sf::Clock mActiveEffectTimer;   // Cuenta cuánto tiempo lleva activo el poder
+    bool mIsEffectActive;           // Bandera para saber si debemos checar el tiempo
+    PowerUp::Type mCurrentEffect;   // Qué efecto está activo ahorita
+
+    // Función auxiliar para limpiar el desorden
+    void resetEffects();
 };

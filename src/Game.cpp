@@ -126,27 +126,70 @@ void Game::update(sf::Time deltaTime) {
 
     // 2. Checar colisiones: Pelota vs PowerUps
     // Usamos un loop inverso para poder borrar elementos sin romper el iterador
+    // DENTRO DE UPDATE (Loop de colisión con PowerUps)
     for (int i = 0; i < mPowerUps.size(); ++i) {
+        // 1. ACTUALIZAR TIEMPO DE VIDA
+        mPowerUps[i].update(deltaTime);
+
+        // 2. VERIFICAR SI EXPIRÓ (Murió de viejo)
+        if (mPowerUps[i].isExpired()) {
+            mPowerUps.erase(mPowerUps.begin() + i);
+            i--; // Ajustamos el índice porque borramos un elemento
+            continue; // Saltamos a la siguiente iteración
+        }
         if (mBall.getGlobalBounds().intersects(mPowerUps[i].getBounds())) {
             
-            // ¡COLISIÓN DETECTADA! Aplicar efecto
+            // 1. PRIMERO: Limpiar cualquier efecto anterior para no bugear
+            resetEffects(); 
+
             PowerUp::Type type = mPowerUps[i].getType();
+            mIsEffectActive = true;
+            mActiveEffectTimer.restart(); // Inicia el cronómetro del poder
+            mCurrentEffect = type;
             
             if (type == PowerUp::SPEED_BOOST) {
-                // Aumentar velocidad de la pelota un 50%
-                mBallVelocity.x *= 1.5f;
-                mBallVelocity.y *= 1.5f;
+                // FEEDBACK VISUAL: Pelota Roja = Peligro
+                mBall.setFillColor(sf::Color::Red);
+                mBallVelocity.x *= 1.8f; // Mucho más rápida
+                mBallVelocity.y *= 1.8f;
             } 
             else if (type == PowerUp::PADDLE_ENLARGE) {
-                // Agrandar ambas palas (para mantenerlo justo/caótico)
-                mPaddleLeft.setSize(sf::Vector2f(20.f, 150.f));
-                mPaddleRight.setSize(sf::Vector2f(20.f, 150.f));
+                // Lógica Inteligente: ¿Quién tocó la pelota último?
+                // Como es difícil saberlo simple, agrandamos al que esté más cerca de la pelota
+                if (mBall.getPosition().x < 400) {
+                    mPaddleLeft.setSize(sf::Vector2f(20.f, 200.f)); // Doble tamaño
+                    mPaddleLeft.setFillColor(sf::Color::Green);     // Feedback visual
+                } else {
+                    mPaddleRight.setSize(sf::Vector2f(20.f, 200.f));
+                    mPaddleRight.setFillColor(sf::Color::Green);
+                }
             }
             
-            // Eliminar el powerup recolectado del vector
             mPowerUps.erase(mPowerUps.begin() + i);
-            i--; // Ajustar índice tras borrar
+            i--; 
         }
+    }
+
+    // --- GESTIÓN DE DURACIÓN DE EFECTOS ---
+    if (mIsEffectActive) {
+        // Si pasaron 5 segundos
+        if (mActiveEffectTimer.getElapsedTime().asSeconds() > 5.f) {
+            resetEffects();
+            
+            // Truco de física: Si la pelota estaba muy rápida, hay que frenarla
+            // Simplemente reducimos el vector actual un poco
+            if (mCurrentEffect == PowerUp::SPEED_BOOST) {
+                mBallVelocity.x *= 0.6f; // Frenado suave
+                mBallVelocity.y *= 0.6f;
+            }
+        }
+    }
+
+    // Si sale por la Izquierda
+    if (mBall.getPosition().x < -20.f) {
+        resetEffects(); // <--- AGREGAR ESTO
+        mBall.setPosition(400.f, 300.f);
+        mBallVelocity = {-200.f, -200.f}; 
     }
 }
 
@@ -163,6 +206,24 @@ void Game::spawnPowerUp() {
     mPowerUps.emplace_back(x, y, type);
 }
 
+void Game::resetEffects() {
+    mIsEffectActive = false;
+
+    // 1. Regresar la pelota a color y velocidad normal (si no es un reset por gol)
+    mBall.setFillColor(sf::Color::White);
+    
+    // Solo normalizamos la velocidad si NO estamos en medio de un saque
+    // (Un truco matemático: normalizamos el vector a su magnitud base)
+    // Pero por simplicidad, asegúrate de que al golpear la pala recupere velocidad base si quieres.
+    
+    // 2. Regresar las palas a tamaño y color normal
+    mPaddleLeft.setSize(sf::Vector2f(20.f, 100.f));
+    mPaddleLeft.setFillColor(sf::Color::White);
+    
+    mPaddleRight.setSize(sf::Vector2f(20.f, 100.f));
+    mPaddleRight.setFillColor(sf::Color::White);
+}
+
 void Game::render() {
     mWindow.clear(sf::Color::Black); 
     
@@ -176,6 +237,6 @@ void Game::render() {
     for (auto& powerUp : mPowerUps) {
         powerUp.draw(mWindow);
     }
-    
+
     mWindow.display();
 }
