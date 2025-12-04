@@ -37,7 +37,17 @@ target_link_libraries(Pong_Retro sfml-graphics sfml-window sfml-system sfml-audi
 # Copia automática de DLLs desde TU carpeta local libs/SFML/bin al build
 if(WIN32)
     add_custom_command(TARGET Pong_Retro POST_BUILD
+        # 1. Copiar las DLLs de SFML (Binarios)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/libs/SFML/bin
-        $<TARGET_FILE_DIR:Pong_Retro>)
+        $<TARGET_FILE_DIR:Pong_Retro>
+
+        # 2. Copiar la carpeta de Assets (Fuentes, Imágenes)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:Pong_Retro>/assets
+
+        # Mensaje en consola para saber que está pasando
+        COMMENT "Copiando DLLs y Assets al directorio de salida..."
+    )
 endif()

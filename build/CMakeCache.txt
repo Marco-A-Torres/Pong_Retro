@@ -265,9 +265,6 @@ Pong_Retro_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 Pong_Retro_SOURCE_DIR:STATIC=C:/Users/marco/Desktop/Pong_CPP
 
-//Path to a file.
-SFML_DOC_DIR:PATH=SFML_DOC_DIR-NOTFOUND
-
 
 ########################
 # INTERNAL cache entries

@@ -17,10 +17,23 @@ private:
     sf::RenderWindow mWindow; // La ventana del juego
     // Aquí agregaremos mPaddle, mBall, etc. en el futuro
     
-    // --- ESTAS SON LAS LÍNEAS QUE TE FALTAN ---
+    // Palas y pelota
     sf::RectangleShape mPaddleLeft;  
     sf::RectangleShape mPaddleRight;
     sf::CircleShape mBall;
+
+
+    // ----- ESTADOS Y UI ---
+    enum State { MENU, PLAYING, GAME_OVER };
+    State mGameState;
+
+    sf::Font mFont;             // La tipografía
+    sf::Text mScoreText;        // Marcador "0 - 0"
+    sf::Text mMessageText;      // Mensajes "PRESS ENTER" o "PLAYER 1 WINS"
+    
+    int mScoreLeft;
+    int mScoreRight;
+    const int WINNING_SCORE = 5; // Gana el primero que llegue a 5
 
     // --- NUEVAS VARIABLES PARA FÍSICA ----
     sf::Vector2f mBallVelocity; // Vector de velocidad (X, Y)
@@ -43,6 +56,9 @@ private:
     bool mControlsInvertedRight; // ¿Jugador Der está maldito?
     
     sf::RectangleShape mWall;    // El objeto físico del muro
+    
     // Función auxiliar para limpiar el desorden
     void resetEffects();
+    // Para reiniciar score y posiciones
+    void resetGame();
 };

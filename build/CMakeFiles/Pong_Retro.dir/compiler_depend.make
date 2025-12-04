@@ -112,6 +112,7 @@ CMakeFiles/Pong_Retro.dir/src/Game.cpp.obj: C:/Users/marco/Desktop/Pong_CPP/src/
   C:/msys64/ucrt64/include/c++/14.2.0/bits/hash_bytes.h \
   C:/msys64/ucrt64/include/c++/14.2.0/bits/invoke.h \
   C:/msys64/ucrt64/include/c++/14.2.0/bits/ios_base.h \
+  C:/msys64/ucrt64/include/c++/14.2.0/bits/istream.tcc \
   C:/msys64/ucrt64/include/c++/14.2.0/bits/locale_classes.h \
   C:/msys64/ucrt64/include/c++/14.2.0/bits/locale_classes.tcc \
   C:/msys64/ucrt64/include/c++/14.2.0/bits/locale_conv.h \
@@ -184,6 +185,8 @@ CMakeFiles/Pong_Retro.dir/src/Game.cpp.obj: C:/Users/marco/Desktop/Pong_CPP/src/
   C:/msys64/ucrt64/include/c++/14.2.0/initializer_list \
   C:/msys64/ucrt64/include/c++/14.2.0/ios \
   C:/msys64/ucrt64/include/c++/14.2.0/iosfwd \
+  C:/msys64/ucrt64/include/c++/14.2.0/iostream \
+  C:/msys64/ucrt64/include/c++/14.2.0/istream \
   C:/msys64/ucrt64/include/c++/14.2.0/iterator \
   C:/msys64/ucrt64/include/c++/14.2.0/locale \
   C:/msys64/ucrt64/include/c++/14.2.0/map \
@@ -1031,6 +1034,10 @@ C:/msys64/ucrt64/include/c++/14.2.0/bits/invoke.h:
 
 C:/msys64/ucrt64/include/c++/14.2.0/bits/ios_base.h:
 
+C:/msys64/ucrt64/include/wctype.h:
+
+C:/msys64/ucrt64/include/c++/14.2.0/bits/istream.tcc:
+
 C:/msys64/ucrt64/include/c++/14.2.0/bits/locale_classes.h:
 
 C:/msys64/ucrt64/include/c++/14.2.0/bits/locale_classes.tcc:
@@ -1144,6 +1151,10 @@ C:/msys64/ucrt64/include/c++/14.2.0/ext/type_traits.h:
 C:/msys64/ucrt64/include/c++/14.2.0/initializer_list:
 
 C:/msys64/ucrt64/include/c++/14.2.0/iosfwd:
+
+C:/msys64/ucrt64/include/c++/14.2.0/iostream:
+
+C:/msys64/ucrt64/include/c++/14.2.0/istream:
 
 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/stdint.h:
 
@@ -1260,8 +1271,6 @@ C:/msys64/ucrt64/include/swprintf.inl:
 C:/msys64/ucrt64/include/time.h:
 
 C:/msys64/ucrt64/include/vadefs.h:
-
-C:/msys64/ucrt64/include/wctype.h:
 
 C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/limits.h:
 

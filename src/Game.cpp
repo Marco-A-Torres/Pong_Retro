@@ -1,11 +1,15 @@
 #include "Game.hpp"
+#include <iostream> // Agrega esto arriba de todo en Game.cpp
 
 // Configuración de la ventana (800x600 px)
-Game::Game() : mWindow(sf::VideoMode(800, 600), "Pong Retro C++ - Avance 3") {
+Game::Game() : mWindow(sf::VideoMode(800, 600), "Pong Retro C++ - Version Final") {
+    mGameState = MENU;
+    mScoreLeft = 0;   // Limpiar basura
+    mScoreRight = 0;  // Limpiar basura
+    
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     mWindow.setFramerateLimit(60); // Limitamos a 60 FPS
-    // --- ESTA ES LA PARTE QUE SEGURAMENTE FALTA ---
     
     // 1. Configurar Pala Izquierda
     mPaddleLeft.setSize(sf::Vector2f(20.f, 100.f)); // Tamaño: Ancho 20, Alto 100
@@ -22,6 +26,31 @@ Game::Game() : mWindow(sf::VideoMode(800, 600), "Pong Retro C++ - Avance 3") {
     mBall.setFillColor(sf::Color::White);
     mBall.setPosition(395.f, 295.f);                // Centro de pantalla aprox
     
+    // --- CARGAR FUENTE Y TEXTO ---
+    // IMPORTANTE: Asegúrate de tener el archivo assets/fonts/font.ttf
+    // En el constructor Game::Game...
+    
+    // Intenta cargar e imprime en la consola si falla
+    if (!mFont.loadFromFile("assets/fonts/font.ttf")) {
+        std::cerr << "ERROR CRITICO: No se encontro el archivo assets/fonts/font.ttf" << std::endl;
+        std::cerr << "Asegurate de que la carpeta assets este JUNTO al ejecutable." << std::endl;
+    } else {
+        std::cout << "EXITO: Fuente cargada correctamente." << std::endl;
+    }
+
+    // Configurar Marcador
+    mScoreText.setFont(mFont);
+    mScoreText.setCharacterSize(40);
+    mScoreText.setFillColor(sf::Color::White);
+    mScoreText.setPosition(300.f, 20.f);
+    mScoreText.setString("0 - 0");
+
+    // Configurar Mensaje Central
+    mMessageText.setFont(mFont);
+    mMessageText.setCharacterSize(30);
+    mMessageText.setFillColor(sf::Color::Yellow);
+    mMessageText.setPosition(125.f, 250.f);
+    mMessageText.setString("PRESS ENTER TO START");
     
     //4.- --- NUEVO: Configuración de Física ---
     mPaddleSpeed = 400.f;             // 400 pixeles por segundo
@@ -53,14 +82,37 @@ void Game::run() {
 void Game::processEvents() {
     sf::Event event;
     while (mWindow.pollEvent(event)) {
+        // Cerrar ventana
         if (event.type == sf::Event::Closed)
             mWindow.close();
-        
-        // Aquí detectaremos inputs de teclado más adelante
+
+        // Detectar pulsación de teclas (Solo una vez al bajar el dedo)
+        if (event.type == sf::Event::KeyPressed) {
+            
+            // Si presionan ENTER
+            if (event.key.code == sf::Keyboard::Enter) {
+                
+                // Caso 1: Estamos en Menú -> Empezar a jugar
+                if (mGameState == MENU) {
+                    mGameState = PLAYING;
+                }
+                // Caso 2: Estamos en Game Over -> Reiniciar todo e ir al Menú
+                else if (mGameState == GAME_OVER) {
+                    resetGame(); 
+                    mGameState = MENU;
+                }
+            }
+        }
     }
 }
 
 void Game::update(sf::Time deltaTime) {
+
+    // --- NUEVO: SI NO ESTAMOS JUGANDO, NO HACEMOS NADA ---
+    if (mGameState != PLAYING) {
+        return; // Salimos de la función inmediatamente
+    }
+
     // Velocidad base
     float speedLeft = mPaddleSpeed;
     float speedRight = mPaddleSpeed;
@@ -128,16 +180,38 @@ void Game::update(sf::Time deltaTime) {
     }
 
     // 7. Sistema de Puntuación (Reset)
-    // Si sale por la Izquierda (Gol del Jugador Derecho)
+    // Si sale por la Izquierda (Gol del Derecho)
     if (mBall.getPosition().x < -20.f) {
-        mBall.setPosition(400.f, 300.f); // Volver al centro
-        mBallVelocity = {-200.f, -200.f}; // Resetear velocidad
+        mScoreRight++;
+        mScoreText.setString(std::to_string(mScoreLeft) + " - " + std::to_string(mScoreRight));
+        resetEffects(); // Tu función de limpiar powerups
+        
+        // Checar victoria
+        if (mScoreRight >= WINNING_SCORE) {
+            mGameState = GAME_OVER;
+            mMessageText.setString("PLAYER 2 WINS!\nPress Enter");
+            mMessageText.setPosition(200.f, 200.f);
+        } else {
+            // Reset normal
+            mBall.setPosition(400.f, 300.f);
+            mBallVelocity = {-200.f, -200.f};
+        }
     }
 
-    // Si sale por la Derecha (Gol del Jugador Izquierdo)
+    // Si sale por la Derecha (Gol del Izquierdo)
     if (mBall.getPosition().x > 820.f) {
-        mBall.setPosition(400.f, 300.f);
-        mBallVelocity = {200.f, -200.f}; // Saque para el otro lado
+        mScoreLeft++;
+        mScoreText.setString(std::to_string(mScoreLeft) + " - " + std::to_string(mScoreRight));
+        resetEffects();
+
+        if (mScoreLeft >= WINNING_SCORE) {
+            mGameState = GAME_OVER;
+            mMessageText.setString("PLAYER 1 WINS!\nPress Enter");
+            mMessageText.setPosition(200.f, 200.f);
+        } else {
+            mBall.setPosition(400.f, 300.f);
+            mBallVelocity = {200.f, -200.f};
+        }
     }
 
     // --- LÓGICA DE POWER-UPS ---
@@ -254,22 +328,70 @@ void Game::resetEffects() {
 }
 
 void Game::render() {
-    mWindow.clear(sf::Color::Black); 
-    
-    // --- VERIFICA QUE TENGAS ESTAS 3 LÍNEAS ---
-    mWindow.draw(mPaddleLeft);
-    mWindow.draw(mPaddleRight);
-    mWindow.draw(mBall);
+    mWindow.clear(sf::Color::Black);
 
-    if (mIsEffectActive && mCurrentEffect == PowerUp::WALL) {
-        mWindow.draw(mWall);
+    if (mGameState == MENU) {
+        mMessageText.setString("PONG RETRO C++\n\nPress Enter to Start");
+        
+        // --- TRUCO DE CENTRADO ---
+        // 1. Obtener la caja que envuelve al texto
+        sf::FloatRect textRect = mMessageText.getLocalBounds();
+        // 2. Poner el punto de anclaje (Origin) en el centro matemático del texto
+        mMessageText.setOrigin(textRect.left + textRect.width/2.0f,
+                               textRect.top  + textRect.height/2.0f);
+        // 3. Mover ese punto de anclaje al centro de la pantalla (400, 300)
+        mMessageText.setPosition(400.f, 300.f);
+        
+        mWindow.draw(mMessageText);
     }
-    
-    // --- DIBUJAR POWERUPS ---
-    // Recorremos el vector y dibujamos cada uno
-    for (auto& powerUp : mPowerUps) {
-        powerUp.draw(mWindow);
+    else if (mGameState == PLAYING) {
+        // Dibujar Juego
+        mWindow.draw(mScoreText); // El marcador arriba
+        
+        // La línea divisoria (Opcional, estética)
+        sf::RectangleShape line(sf::Vector2f(2.f, 600.f));
+        line.setPosition(400.f, 0.f);
+        line.setFillColor(sf::Color(100, 100, 100));
+        mWindow.draw(line);
+
+        mWindow.draw(mPaddleLeft);
+        mWindow.draw(mPaddleRight);
+        
+        // Dibujar PowerUps (Tu código)
+        for (auto& p : mPowerUps) p.draw(mWindow);
+        
+        // Dibujar Muro (Si existe)
+        if (mIsEffectActive && mCurrentEffect == PowerUp::WALL) mWindow.draw(mWall);
+
+        mWindow.draw(mBall);
+    }
+    else if (mGameState == GAME_OVER) {
+        // El texto ya se seteó en update, pero aseguramos el centrado aquí también
+        sf::FloatRect textRect = mMessageText.getLocalBounds();
+        mMessageText.setOrigin(textRect.left + textRect.width/2.0f,
+                               textRect.top  + textRect.height/2.0f);
+        mMessageText.setPosition(400.f, 300.f);
+        
+        mWindow.draw(mMessageText); 
     }
 
     mWindow.display();
+}
+
+void Game::resetGame() {
+    // 1. Reiniciar Marcador
+    mScoreLeft = 0;
+    mScoreRight = 0;
+    mScoreText.setString("0 - 0");
+
+    // 2. Reiniciar Posiciones
+    mBall.setPosition(400.f, 300.f);
+    mBallVelocity = {-200.f, -200.f}; // Saque inicial
+    
+    mPaddleLeft.setPosition(50.f, 250.f);
+    mPaddleRight.setPosition(730.f, 250.f);
+
+    // 3. Limpiar PowerUps y Efectos
+    resetEffects();     // Quita velocidad roja, muros, etc.
+    mPowerUps.clear();  // Borra las bolitas que quedaron flotando
 }

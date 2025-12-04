@@ -243,4 +243,7 @@ CMakeFiles/Pong_Retro.dir/src/Game.cpp.obj: \
  C:/Users/marco/Desktop/Pong_CPP/libs/SFML/include/SFML/Graphics/Sprite.hpp \
  C:/Users/marco/Desktop/Pong_CPP/libs/SFML/include/SFML/Graphics/Text.hpp \
  C:/Users/marco/Desktop/Pong_CPP/libs/SFML/include/SFML/Graphics/VertexBuffer.hpp \
- C:/Users/marco/Desktop/Pong_CPP/include/PowerUp.hpp
+ C:/Users/marco/Desktop/Pong_CPP/include/PowerUp.hpp \
+ C:/msys64/ucrt64/include/c++/14.2.0/iostream \
+ C:/msys64/ucrt64/include/c++/14.2.0/istream \
+ C:/msys64/ucrt64/include/c++/14.2.0/bits/istream.tcc
